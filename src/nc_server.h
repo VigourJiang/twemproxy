@@ -97,14 +97,14 @@ struct server_pool {
     uint32_t           nserver_continuum;    /* # servers - live and dead on continuum (const) */
     struct continuum   *continuum;           /* continuum */
     uint32_t           nlive_server;         /* # live server */
-    int64_t            next_rebuild;         /* next distribution rebuild time in usec */
+    int64_t            next_rebuild;         /* next distribution rebuild time in usec */ // jfq, 等于0表示不需要重建
 
     struct string      name;                 /* pool name (ref in conf_pool) */
     struct string      addrstr;              /* pool address - hostname:port (ref in conf_pool) */
     uint16_t           port;                 /* port */
     struct sockinfo    info;                 /* listen socket info */
     mode_t             perm;                 /* socket permission */
-    int                dist_type;            /* distribution type (dist_type_t) */
+    int                dist_type;            /* distribution type (dist_type_t) */ // jfq, 采用哪种算法进行data sharding
     int                key_hash_type;        /* key hash type (hash_type_t) */
     hash_t             key_hash;             /* key hasher */
     struct string      hash_tag;             /* key hash tag (ref in conf_pool) */

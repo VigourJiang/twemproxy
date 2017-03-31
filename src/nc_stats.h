@@ -94,6 +94,7 @@ struct stats {
     int64_t             start_ts;        /* start timestamp of nutcracker */
     struct stats_buffer buf;             /* output buffer */
 
+	// jfq, current/shadow/sum的结构完全相同，只是数值不同 sum = current + shadow
     struct array        current;         /* stats_pool[] (a) */
     struct array        shadow;          /* stats_pool[] (b) */
     struct array        sum;             /* stats_pool[] (c = a + b) */

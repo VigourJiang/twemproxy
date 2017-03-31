@@ -23,8 +23,11 @@
 static uint32_t nfree_mbufq;   /* # free mbuf */
 static struct mhdr free_mbufq; /* free mbuf q */
 
-static size_t mbuf_chunk_size; /* mbuf chunk size - header + data (const) */
-static size_t mbuf_offset;     /* mbuf offset in chunk (const) */
+// jfq, 大小默认为16K
+static size_t mbuf_chunk_size; /* mbuf chunk size - header + data (const) */ 
+
+// jfq, mbuf_offset = mbuf_chunk_size - MBUF_HSIZE;
+static size_t mbuf_offset;     /* mbuf offset in chunk (const) */ 
 
 static struct mbuf *
 _mbuf_get(void)
@@ -33,6 +36,7 @@ _mbuf_get(void)
     uint8_t *buf;
 
     if (!STAILQ_EMPTY(&free_mbufq)) {
+		// jfq, 从缓存中获取一个
         ASSERT(nfree_mbufq > 0);
 
         mbuf = STAILQ_FIRST(&free_mbufq);
@@ -58,7 +62,7 @@ _mbuf_get(void)
      *   |       mbuf data          |  mbuf header   |
      *   |     (mbuf_offset)        | (struct mbuf)  |
      *   +-------------------------------------------+
-     *   ^           ^        ^     ^^
+     *   ^           ^        ^     ^^    // jfq, start、pos等字段，指向了这些地址
      *   |           |        |     ||
      *   \           |        |     |\
      *   mbuf->start \        |     | mbuf->end (one byte past valid bound)
@@ -109,12 +113,13 @@ mbuf_free(struct mbuf *mbuf)
     log_debug(LOG_VVERB, "put mbuf %p len %d", mbuf, mbuf->last - mbuf->pos);
 
     ASSERT(STAILQ_NEXT(mbuf, next) == NULL);
-    ASSERT(mbuf->magic == MBUF_MAGIC);
+    ASSERT(mbuf->magic == MBUF_MAGIC); // jfq, test memory overrun
 
     buf = (uint8_t *)mbuf - mbuf_offset;
     nc_free(buf);
 }
 
+// jfq, put mbuf to free list
 void
 mbuf_put(struct mbuf *mbuf)
 {

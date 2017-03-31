@@ -89,6 +89,7 @@ proxy_close(struct context *ctx, struct conn *conn)
     conn_put(conn);
 }
 
+// jfq, 设置socket的SO_REUSEADDR属性
 static rstatus_t
 proxy_reuse(struct conn *p)
 {
@@ -120,6 +121,7 @@ proxy_reuse(struct conn *p)
     return status;
 }
 
+// jfq, 在指定的conn上执行侦听
 static rstatus_t
 proxy_listen(struct context *ctx, struct conn *p)
 {
@@ -268,6 +270,8 @@ proxy_deinit(struct context *ctx)
               array_n(&ctx->pool));
 }
 
+// jfq, 当Listening socket发现有连接请求，则调用到此处，进行accept操作。
+// jfq, accept后，获取新socket的fd、获取新的conn对象，并把fd注册到epoll中
 static rstatus_t
 proxy_accept(struct context *ctx, struct conn *p)
 {
@@ -387,7 +391,8 @@ proxy_accept(struct context *ctx, struct conn *p)
 
     return NC_OK;
 }
-
+ 
+// jfq, Proxy侦听的端口接收到了accept请求，然后执行此函数
 rstatus_t
 proxy_recv(struct context *ctx, struct conn *conn)
 {

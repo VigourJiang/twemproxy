@@ -52,10 +52,10 @@ struct conn {
     struct msg          *rmsg;           /* current message being rcvd */
     struct msg          *smsg;           /* current message being sent */
 
-    conn_recv_t         recv;            /* recv (read) handler */
+    conn_recv_t         recv;            /* recv (read) handler */ // jfq, msg_recv()
     conn_recv_next_t    recv_next;       /* recv next message handler */
     conn_recv_done_t    recv_done;       /* read done handler */
-    conn_send_t         send;            /* send (write) handler */
+    conn_send_t         send;            /* send (write) handler */ // jfq, msg_send()
     conn_send_next_t    send_next;       /* write next message handler */
     conn_send_done_t    send_done;       /* write done handler */
     conn_close_t        close;           /* close handler */
@@ -81,8 +81,13 @@ struct conn {
     unsigned            send_active:1;   /* send active? */
     unsigned            send_ready:1;    /* send ready? */
 
+	// jfq, conn对象可以用在三种地方：
+	// jfq, 1. server pool执行listen的时候，此时proxy=1,client=0
+	// jfq, 2. server pool的listen端口，accept了一个新的连接，新连接的conn的proxy=0,client=1
+	// jfq, 3. nutcracker与后台server建立了一个tcp连接，该连接的conn的proxy=0，client=0
     unsigned            client:1;        /* client? or server? */
     unsigned            proxy:1;         /* proxy? */
+	
     unsigned            connecting:1;    /* connecting? */
     unsigned            connected:1;     /* connected? */
     unsigned            eof:1;           /* eof? aka passive close? */

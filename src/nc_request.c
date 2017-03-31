@@ -395,6 +395,8 @@ req_server_dequeue_omsgq(struct context *ctx, struct conn *conn, struct msg *msg
     stats_server_decr_by(ctx, conn->owner, out_queue_bytes, msg->mlen);
 }
 
+// jfq, 取得一个msg对象，设置为conn->rmsg，并返回该msg
+// jfq, 后续该msg会被从client socket中读取的数据填充
 struct msg *
 req_recv_next(struct context *ctx, struct conn *conn, bool alloc)
 {
@@ -611,6 +613,7 @@ req_forward(struct context *ctx, struct conn *c_conn, struct msg *msg)
               msg->mlen, msg->type, keylen, key);
 }
 
+// jfq, recv msg from client
 void
 req_recv_done(struct context *ctx, struct conn *conn, struct msg *msg,
               struct msg *nmsg)
@@ -691,6 +694,9 @@ req_recv_done(struct context *ctx, struct conn *conn, struct msg *msg,
     return;
 }
 
+// jfq, 从conn->imsg_q中，取出第一个msg，
+// jfq, 并把此msg设置为conn->smsg，并返回此msg
+// jfq, 此后，这个msg会被发送给redis/memcached
 struct msg *
 req_send_next(struct context *ctx, struct conn *conn)
 {
@@ -734,6 +740,7 @@ req_send_next(struct context *ctx, struct conn *conn)
     return nmsg;
 }
 
+// jfq, send req msg to redis/memcached done.
 void
 req_send_done(struct context *ctx, struct conn *conn, struct msg *msg)
 {
@@ -754,8 +761,10 @@ req_send_done(struct context *ctx, struct conn *conn, struct msg *msg)
      * Otherwise, free the noreply request
      */
     if (!msg->noreply) {
+		// jfq, reply expected
         conn->enqueue_outq(ctx, conn, msg);
     } else {
+		// jfq, no reply expected
         req_put(msg);
     }
 }

@@ -24,7 +24,7 @@ typedef void (*mbuf_copy_t)(struct mbuf *, void *);
 
 struct mbuf {
     uint32_t           magic;   /* mbuf magic (const) */
-    STAILQ_ENTRY(mbuf) next;    /* next mbuf */
+    STAILQ_ENTRY(mbuf) next;    /* next mbuf */ // jfq, 可以组成链表
     uint8_t            *pos;    /* read marker */
     uint8_t            *last;   /* write marker */
     uint8_t            *start;  /* start of buffer (const) */
@@ -36,7 +36,7 @@ STAILQ_HEAD(mhdr, mbuf);
 #define MBUF_MAGIC      0xdeadbeef
 #define MBUF_MIN_SIZE   512
 #define MBUF_MAX_SIZE   16777216
-#define MBUF_SIZE       16384
+#define MBUF_SIZE       16384 // jfq, 16*1024
 #define MBUF_HSIZE      sizeof(struct mbuf)
 
 static inline bool

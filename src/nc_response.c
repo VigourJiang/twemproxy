@@ -83,6 +83,8 @@ rsp_make_error(struct context *ctx, struct conn *conn, struct msg *msg)
     return msg_get_error(conn->redis, err);
 }
 
+// jfq, 从conn中获取一个msg，并设置为conn->rmsg，并返回。
+// jfq，此后，这个msg会被从redis/memcached socket获取到的数据包填充。
 struct msg *
 rsp_recv_next(struct context *ctx, struct conn *conn, bool alloc)
 {
@@ -271,6 +273,7 @@ rsp_forward(struct context *ctx, struct conn *s_conn, struct msg *msg)
     rsp_forward_stats(ctx, s_conn->owner, msg, msgsize);
 }
 
+// jfq, received resp from redis/memcached
 void
 rsp_recv_done(struct context *ctx, struct conn *conn, struct msg *msg,
               struct msg *nmsg)
@@ -291,6 +294,9 @@ rsp_recv_done(struct context *ctx, struct conn *conn, struct msg *msg,
     rsp_forward(ctx, conn, msg);
 }
 
+// jfq, 检查conn的omsg_q中的第一个msg，看是否已经done（就是已经收到了resp）
+// jfq, 如果有则返回msg.peer，并把msg.peer设置为conn.smsg
+// jfq，后续，msg.peer会被发送给client机器
 struct msg *
 rsp_send_next(struct context *ctx, struct conn *conn)
 {
@@ -338,6 +344,7 @@ rsp_send_next(struct context *ctx, struct conn *conn)
         pmsg->peer = msg;
         stats_pool_incr(ctx, conn->owner, forward_error);
     } else {
+		// jfq, 发送rsp msg
         msg = pmsg->peer;
     }
     ASSERT(!msg->request);
@@ -349,6 +356,7 @@ rsp_send_next(struct context *ctx, struct conn *conn)
     return msg;
 }
 
+// jfq, send resp to client
 void
 rsp_send_done(struct context *ctx, struct conn *conn, struct msg *msg)
 {

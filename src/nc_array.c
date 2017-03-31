@@ -19,6 +19,7 @@
 
 #include <nc_core.h>
 
+// jfq, 创建一个array。
 struct array *
 array_create(uint32_t n, size_t size)
 {
@@ -43,7 +44,8 @@ array_create(uint32_t n, size_t size)
 
     return a;
 }
-
+ 
+// jfq, free一个数组
 void
 array_destroy(struct array *a)
 {
@@ -78,6 +80,7 @@ array_deinit(struct array *a)
     }
 }
 
+// jfq, 返回elem在array中的index
 uint32_t
 array_idx(struct array *a, void *elem)
 {

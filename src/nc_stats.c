@@ -31,6 +31,8 @@ struct stats_desc {
     char *desc; /* stats description */
 };
 
+// jfq, array of stats_metric with .type and .name initialized.
+// jfq, array[ {.name = xxxx, .type = yyyy}, {.name = aaaa, .type = bbbb},... ]
 #define DEFINE_ACTION(_name, _type, _desc) { .type = _type, .name = string(#_name) },
 static struct stats_metric stats_pool_codec[] = {
     STATS_POOL_CODEC( DEFINE_ACTION )
@@ -41,6 +43,8 @@ static struct stats_metric stats_server_codec[] = {
 };
 #undef DEFINE_ACTION
 
+// jfq, array of stats_desc with .name and .desc initialized.
+// jfq, array[ {.name = xxx, .desc = yyyy}, {.name = aaaa, .desc = bbbb}, ... ]
 #define DEFINE_ACTION(_name, _type, _desc) { .name = #_name, .desc = _desc },
 static struct stats_desc stats_pool_desc[] = {
     STATS_POOL_CODEC( DEFINE_ACTION )
@@ -51,6 +55,7 @@ static struct stats_desc stats_server_desc[] = {
 };
 #undef DEFINE_ACTION
 
+// jfq, 打印所有的stats信息
 void
 stats_describe(void)
 {

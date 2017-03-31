@@ -26,8 +26,8 @@ typedef rstatus_t (*array_each_t)(void *, void *);
 struct array {
     uint32_t nelem;  /* # element */
     void     *elem;  /* element */
-    size_t   size;   /* element size */
-    uint32_t nalloc; /* # allocated element */
+    size_t   size;   /* element size */ // jfq, 有效元素的数量。
+    uint32_t nalloc; /* # allocated element */ // jfq, 已经分配空间的大小，nalloc==size表示array满了。
 };
 
 #define null_array { 0, NULL, 0, 0 }

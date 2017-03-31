@@ -292,6 +292,7 @@ core_timeout(struct context *ctx)
 
         now = nc_msec_now();
         if (now < then) {
+			// jfq，没有超时，还要更新ctx->timeout。下一次epoll_wait，就用这个ctx->timeout
             int delta = (int)(then - now);
             ctx->timeout = MIN(delta, ctx->max_timeout);
             return;
@@ -306,6 +307,7 @@ core_timeout(struct context *ctx)
     }
 }
 
+// jfq, epoll_wait后的回调函数。所有io事件都是从这个函数开始处理的。
 rstatus_t
 core_core(void *arg, uint32_t events)
 {

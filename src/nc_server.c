@@ -39,6 +39,7 @@ server_resolve(struct server *server, struct conn *conn)
     conn->addr = (struct sockaddr *)&server->info.addr;
 }
 
+// jfq，建立server与conn的关系
 void
 server_ref(struct conn *conn, void *owner)
 {
@@ -58,6 +59,7 @@ server_ref(struct conn *conn, void *owner)
               server->pname.len, server->pname.data);
 }
 
+// jfq, 取消server与conn的关联关系
 void
 server_unref(struct conn *conn)
 {
@@ -77,6 +79,7 @@ server_unref(struct conn *conn)
               server->pname.len, server->pname.data);
 }
 
+// jfq, 获取server中设定的timeout时间
 int
 server_timeout(struct conn *conn)
 {
@@ -121,6 +124,7 @@ server_active(struct conn *conn)
     return false;
 }
 
+// jfq, 设置server的owner为server pool
 static rstatus_t
 server_each_set_owner(void *elem, void *data)
 {
@@ -183,6 +187,7 @@ server_deinit(struct array *server)
     array_deinit(server);
 }
 
+// jfq, 获取一条与server连接的conn对象（注意，此时只是获取conn对象，还没有建立TCP）
 struct conn *
 server_conn(struct server *server)
 {
@@ -197,7 +202,10 @@ server_conn(struct server *server)
      * 'server_connections:' > 0 key
      */
 
-    if (server->ns_conn_q < pool->server_connections) {
+    if (server->ns_conn_q < pool->server_connections) { 
+		// jfq, 如果与server的连接数量小于配置中指定的最大连接数，则新建一个连接
+		// jfq, 但是，通常配置中指定的最大连接数为1.
+		// jfq, 用一个连接是正确的，多个连接可能出现问题，因为多连接无法保证命令发送顺序
         return conn_get(server, false, pool->redis);
     }
     ASSERT(server->ns_conn_q == pool->server_connections);
@@ -215,6 +223,7 @@ server_conn(struct server *server)
     return conn;
 }
 
+// jfq, 与后台server，建立一个TCP连接
 static rstatus_t
 server_each_preconnect(void *elem, void *data)
 {
@@ -309,6 +318,7 @@ server_failure(struct context *ctx, struct server *server)
     }
 }
 
+// jfq，向stats中更新server的关闭数据
 static void
 server_close_stats(struct context *ctx, struct server *server, err_t err,
                    unsigned eof, unsigned connected)
@@ -462,6 +472,7 @@ server_close(struct context *ctx, struct conn *conn)
     conn_put(conn);
 }
 
+// jfq, 建立与server的tcp连接，这个函数执行具体的socket操作
 rstatus_t
 server_connect(struct context *ctx, struct server *server, struct conn *conn)
 {
@@ -581,6 +592,7 @@ server_ok(struct context *ctx, struct conn *conn)
     }
 }
 
+// jfq，当server pool后台的某个服务器状态发生变化的时候，重新构造server pool中的distribution数据
 static rstatus_t
 server_pool_update(struct server_pool *pool)
 {
@@ -643,6 +655,7 @@ server_pool_hash(struct server_pool *pool, uint8_t *key, uint32_t keylen)
     return pool->key_hash((char *)key, keylen);
 }
 
+// jfq, 根据key，从server pool中选择一个server
 uint32_t
 server_pool_idx(struct server_pool *pool, uint8_t *key, uint32_t keylen)
 {
@@ -708,6 +721,7 @@ server_pool_server(struct server_pool *pool, uint8_t *key, uint32_t keylen)
     return server;
 }
 
+// jfq, 根据指定的key，从server pool中选择一个server的conn对象。其实就是选择一个server。
 struct conn *
 server_pool_conn(struct context *ctx, struct server_pool *pool, uint8_t *key,
                  uint32_t keylen)

@@ -164,6 +164,7 @@ _conn_get(void)
     return conn;
 }
 
+// jfq, 获取一个新的conn对象，并对各个字段进行初始化
 struct conn *
 conn_get(void *owner, bool client, bool redis)
 {
@@ -179,7 +180,7 @@ conn_get(void *owner, bool client, bool redis)
 
     conn->client = client ? 1 : 0;
 
-    if (conn->client) {
+    if (conn->client) { // jfq, connection to client
         /*
          * client receives a request, possibly parsing it, and sends a
          * response downstream.
@@ -206,7 +207,7 @@ conn_get(void *owner, bool client, bool redis)
         conn->swallow_msg = NULL;
 
         ncurr_cconn++;
-    } else {
+    } else { // jfq, connection to redis/memcached server
         /*
          * server receives a response, possibly parsing it, and sends a
          * request upstream.
@@ -292,6 +293,7 @@ conn_free(struct conn *conn)
     nc_free(conn);
 }
 
+// jfq, 把conn保存到free list中
 void
 conn_put(struct conn *conn)
 {
@@ -381,6 +383,7 @@ conn_recv(struct conn *conn, void *buf, size_t size)
     return NC_ERROR;
 }
 
+// jfq, 向socket中，写入数据；返回值小于0，表示发生错误；大于等于0，表示写入的长度
 ssize_t
 conn_sendv(struct conn *conn, struct array *sendv, size_t nsend)
 {

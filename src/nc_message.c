@@ -113,7 +113,10 @@ static uint64_t msg_id;          /* message id counter */
 static uint64_t frag_id;         /* fragment id counter */
 static uint32_t nfree_msgq;      /* # free msg q */
 static struct msg_tqh free_msgq; /* free msg q */
+// jfq, 用来计算消息timeout的红黑树。rbtree节点的用来排序的key是超时时刻，data是conn对象。
+// jfq, 从rbtree的节点指针，可以直接转换为msg指针
 static struct rbtree tmo_rbt;    /* timeout rbtree */
+// jfq, rbtree tmo_rbt需要一个sentinel节点，表示nil元素
 static struct rbnode tmo_rbs;    /* timeout rbtree sentinel */
 
 #define DEFINE_ACTION(_name) string(#_name),
@@ -123,6 +126,7 @@ static struct string msg_type_strings[] = {
 };
 #undef DEFINE_ACTION
 
+// jfq, 把rbtree中的指针，转换为msg指针
 static struct msg *
 msg_from_rbe(struct rbnode *node)
 {
@@ -135,6 +139,7 @@ msg_from_rbe(struct rbnode *node)
     return msg;
 }
 
+// jfq, 从timeout红黑树中，取得一个最小的节点
 struct msg *
 msg_tmo_min(void)
 {
@@ -148,6 +153,7 @@ msg_tmo_min(void)
     return msg_from_rbe(node);
 }
 
+// jfq, 把msg消息插入到timeout红黑树中
 void
 msg_tmo_insert(struct msg *msg, struct conn *conn)
 {
@@ -172,6 +178,7 @@ msg_tmo_insert(struct msg *msg, struct conn *conn)
               "%d msec", msg->id, timeout);
 }
 
+// jfq, 从timeout红黑树中，删除msg对象
 void
 msg_tmo_delete(struct msg *msg)
 {
@@ -190,12 +197,14 @@ msg_tmo_delete(struct msg *msg)
     log_debug(LOG_VERB, "delete msg %"PRIu64" from tmo rbt", msg->id);
 }
 
+// jfq, 从free list中获取一个msg对象；如果free list为空则新建一个；然后初始化msg的各个字段
 static struct msg *
 _msg_get(void)
 {
     struct msg *msg;
 
     if (!TAILQ_EMPTY(&free_msgq)) {
+		// jfq, 从buffer中获取一个
         ASSERT(nfree_msgq > 0);
 
         msg = TAILQ_FIRST(&free_msgq);
@@ -273,6 +282,7 @@ done:
     return msg;
 }
 
+// jfq, 获取一个新的msg对象，并根据参数，初始化各个业务字段，主要是回调函数
 struct msg *
 msg_get(struct conn *conn, bool request, bool redis)
 {
@@ -322,6 +332,7 @@ msg_get(struct conn *conn, bool request, bool redis)
     return msg;
 }
 
+// jfq, 构造一个表示出错的msg对象
 struct msg *
 msg_get_error(bool redis, err_t err)
 {
@@ -485,6 +496,7 @@ msg_ensure_mbuf(struct msg *msg, size_t len)
  * Append n bytes of data, with n <= mbuf_size(mbuf)
  * into mbuf
  */
+// jfq, 向msg中，append以下内容：mem[pos,post+n)
 rstatus_t
 msg_append(struct msg *msg, uint8_t *pos, size_t n)
 {
@@ -681,7 +693,8 @@ msg_recv_chain(struct context *ctx, struct conn *conn, struct msg *msg)
 
     msize = mbuf_size(mbuf);
 
-    n = conn_recv(conn, mbuf->last, msize);
+	// jfq, 从socket中读取数据，写入mbuf->last起始的地址
+	n = conn_recv(conn, mbuf->last, msize);
     if (n < 0) {
         if (n == NC_EAGAIN) {
             return NC_OK;
@@ -712,6 +725,7 @@ msg_recv_chain(struct context *ctx, struct conn *conn, struct msg *msg)
     return NC_OK;
 }
 
+// jfq, recv msg from client or redis／memcached
 rstatus_t
 msg_recv(struct context *ctx, struct conn *conn)
 {
@@ -722,6 +736,7 @@ msg_recv(struct context *ctx, struct conn *conn)
 
     conn->recv_ready = 1;
     do {
+		// req_recv_next or rsp_recv_next
         msg = conn->recv_next(ctx, conn, true);
         if (msg == NULL) {
             return NC_OK;
@@ -863,6 +878,7 @@ msg_send_chain(struct context *ctx, struct conn *conn, struct msg *msg)
     return (n == NC_EAGAIN) ? NC_OK : NC_ERROR;
 }
 
+// jfq, send msg to client or redis／memcached
 rstatus_t
 msg_send(struct context *ctx, struct conn *conn)
 {

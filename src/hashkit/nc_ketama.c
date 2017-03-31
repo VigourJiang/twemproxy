@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// jfq, 一致性哈希算法ketama的实现
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -27,6 +27,7 @@
 #define KETAMA_POINTS_PER_SERVER    160 /* 40 points per hash */
 #define KETAMA_MAX_HOSTLEN          86
 
+// jfq, 辅助哈希函数
 static uint32_t
 ketama_hash(const char *key, size_t key_length, uint32_t alignment)
 {
@@ -54,6 +55,7 @@ ketama_item_cmp(const void *t1, const void *t2)
     }
 }
 
+// jfq, 根据活动的server列表，重新构造圆环
 rstatus_t
 ketama_update(struct server_pool *pool)
 {
@@ -189,6 +191,7 @@ ketama_update(struct server_pool *pool)
     }
 
     pool->ncontinuum = pointer_counter;
+	// jfq，对圆环中的元素，按照哈希值排序
     qsort(pool->continuum, pool->ncontinuum, sizeof(*pool->continuum),
           ketama_item_cmp);
 
@@ -212,6 +215,7 @@ ketama_update(struct server_pool *pool)
     return NC_OK;
 }
 
+// jfq, 根据hash数值，查询圆环上的点，也就是查询server的index
 uint32_t
 ketama_dispatch(struct continuum *continuum, uint32_t ncontinuum, uint32_t hash)
 {
