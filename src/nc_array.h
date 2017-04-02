@@ -24,9 +24,9 @@ typedef int (*array_compare_t)(const void *, const void *);
 typedef rstatus_t (*array_each_t)(void *, void *);
 
 struct array {
-    uint32_t nelem;  /* # element */
+    uint32_t nelem;  /* # element */ // jfq, 有效元素的数量。
     void     *elem;  /* element */
-    size_t   size;   /* element size */ // jfq, 有效元素的数量。
+    size_t   size;   /* element size */ // jfq, 单个元素占用内存空间的大小
     uint32_t nalloc; /* # allocated element */ // jfq, 已经分配空间的大小，nalloc==size表示array满了。
 };
 

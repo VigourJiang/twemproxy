@@ -21,6 +21,7 @@
 
 #include <sys/epoll.h>
 
+// jfq, 调用epoll_create
 struct event_base *
 event_base_create(int nevent, event_cb_t cb)
 {
@@ -65,6 +66,7 @@ event_base_create(int nevent, event_cb_t cb)
     return evb;
 }
 
+// jfq, close epoll fd
 void
 event_base_destroy(struct event_base *evb)
 {
@@ -116,6 +118,8 @@ event_add_in(struct event_base *evb, struct conn *c)
     return status;
 }
 
+
+// jfq, do nothing
 int
 event_del_in(struct event_base *evb, struct conn *c)
 {
@@ -182,6 +186,7 @@ event_del_out(struct event_base *evb, struct conn *c)
     return status;
 }
 
+// jfq, 向epoll中注册一个socket fd。读取read、write事件。EdgeTrigger。
 int
 event_add_conn(struct event_base *evb, struct conn *c)
 {
@@ -208,6 +213,7 @@ event_add_conn(struct event_base *evb, struct conn *c)
     return status;
 }
 
+// jfq, 把conn所对应的fd从epoll中删除
 int
 event_del_conn(struct event_base *evb, struct conn *c)
 {
@@ -294,6 +300,7 @@ event_wait(struct event_base *evb, int timeout)
     NOT_REACHED();
 }
 
+// jfq, 对外提供stats数据的epoll循环
 void
 event_loop_stats(event_stats_cb_t cb, void *arg)
 {

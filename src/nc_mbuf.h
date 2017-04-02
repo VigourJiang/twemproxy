@@ -23,12 +23,12 @@
 typedef void (*mbuf_copy_t)(struct mbuf *, void *);
 
 struct mbuf {
-    uint32_t           magic;   /* mbuf magic (const) */
+    uint32_t           magic;   /* mbuf magic (const) */ // jfq, 用来检测内存溢出
     STAILQ_ENTRY(mbuf) next;    /* next mbuf */ // jfq, 可以组成链表
-    uint8_t            *pos;    /* read marker */
-    uint8_t            *last;   /* write marker */
-    uint8_t            *start;  /* start of buffer (const) */
-    uint8_t            *end;    /* end of buffer (const) */
+    uint8_t            *pos;    /* read marker */ // jfq, 当前的读位置
+    uint8_t            *last;   /* write marker */ // jfq, 当前的写位置
+    uint8_t            *start;  /* start of buffer (const) */ // jfq，可读写内存的起始位置，可读写的合法区域[start,end)
+    uint8_t            *end;    /* end of buffer (const) */ // jfq, 可读写内存的结束位置，可读写的合法区域[start,end)
 };
 
 STAILQ_HEAD(mhdr, mbuf);

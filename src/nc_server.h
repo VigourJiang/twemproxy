@@ -61,6 +61,7 @@
 
 typedef uint32_t (*hash_t)(const char *, size_t);
 
+// jfq, 以下数据结构用于data sharding算法
 struct continuum {
     uint32_t index;  /* server index */
     uint32_t value;  /* hash value */
@@ -80,7 +81,7 @@ struct server {
     uint32_t           ns_conn_q;     /* # server connection */
     struct conn_tqh    s_conn_q;      /* server connection q */
 
-    int64_t            next_retry;    /* next retry time in usec */
+    int64_t            next_retry;    /* next retry time in usec */ // jfq, 0表示正常，非0表示失败了且需要重试
     uint32_t           failure_count; /* # consecutive failures */
 };
 
@@ -117,7 +118,7 @@ struct server_pool {
     uint32_t           server_failure_limit; /* server failure limit */
     struct string      redis_auth;           /* redis_auth password (matches requirepass on redis) */
     unsigned           require_auth;         /* require_auth? */
-    unsigned           auto_eject_hosts:1;   /* auto_eject_hosts? */
+    unsigned           auto_eject_hosts:1;   /* auto_eject_hosts? */ // jfq, 配置项，是否自动剔除fail的服务器
     unsigned           preconnect:1;         /* preconnect? */
     unsigned           redis:1;              /* redis? */
     unsigned           tcpkeepalive:1;       /* tcpkeepalive? */

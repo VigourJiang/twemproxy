@@ -91,12 +91,14 @@ ketama_update(struct server_pool *pool)
     for (server_index = 0; server_index < nserver; server_index++) {
         struct server *server = array_get(&pool->server, server_index);
 
-        if (pool->auto_eject_hosts) {
-            if (server->next_retry <= now) {
-                server->next_retry = 0LL;
+        if (pool->auto_eject_hosts) { // jfq, 自动剔除失败的server
+            if (server->next_retry <= now) { // jfq, next_retry=0，或者非0。非0表示服务器虽然失败了，但是过了一段时间了，需要重试一下了。
+                server->next_retry = 0LL; 
                 nlive_server++;
             } else if (pool->next_rebuild == 0LL ||
                        server->next_retry < pool->next_rebuild) {
+				// jfq, 服务器失败了，并且还不需要重试，但是需要更新一下next_rebuild的时间
+				// jfq, pool.next_rebuild = min(server.next_retry)
                 pool->next_rebuild = server->next_retry;
             }
         } else {
@@ -171,7 +173,7 @@ ketama_update(struct server_pool *pool)
 
         for (pointer_index = 1;
              pointer_index <= pointer_per_server / pointer_per_hash;
-             pointer_index++) {
+             pointer_index++) { 
 
             char host[KETAMA_MAX_HOSTLEN]= "";
             size_t hostlen;
@@ -181,7 +183,7 @@ ketama_update(struct server_pool *pool)
                                server->name.len, server->name.data,
                                pointer_index - 1);
 
-            for (x = 0; x < pointer_per_hash; x++) {
+            for (x = 0; x < pointer_per_hash; x++) { // jfq, 每个字符串产生四个点
                 value = ketama_hash(host, hostlen, x);
                 pool->continuum[continuum_index].index = server_index;
                 pool->continuum[continuum_index++].value = value;
@@ -215,7 +217,7 @@ ketama_update(struct server_pool *pool)
     return NC_OK;
 }
 
-// jfq, 根据hash数值，查询圆环上的点，也就是查询server的index
+// jfq, 根据hash数值，查询圆环上的点，也就是查询server的index。这里用的是二分查找法
 uint32_t
 ketama_dispatch(struct continuum *continuum, uint32_t ncontinuum, uint32_t hash)
 {

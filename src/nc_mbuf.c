@@ -105,6 +105,7 @@ mbuf_get(void)
     return mbuf;
 }
 
+// jfq, 程序退出的时候，才会调用这个函数，把内存释放掉
 static void
 mbuf_free(struct mbuf *mbuf)
 {
